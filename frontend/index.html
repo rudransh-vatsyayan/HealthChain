@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealthChain — Privacy-First Health Data Platform</title>
+  <meta name="description" content="HealthChain: Blockchain-secured, federated-AI powered medical data platform for patients, doctors and insurers." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/styles/base.css" />
+  <link rel="stylesheet" href="/src/styles/components.css" />
+  <link rel="stylesheet" href="/src/styles/animations.css" />
+</head>
+<body>
+
+<!-- Login overlay -->
+<div id="login-overlay">
+  <div id="login-box">
+    <div class="login-logo">HealthChain</div>
+    <p class="login-sub">Privacy-First · Blockchain-Secured · Federated AI</p>
+    <div id="login-error" class="login-error" style="display:none"></div>
+    <div class="login-field">
+      <label for="login-email">Email</label>
+      <input id="login-email" type="email" placeholder="patient@healthchain.io" autocomplete="email" />
+    </div>
+    <div class="login-field">
+      <label for="login-password">Password</label>
+      <input id="login-password" type="password" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button id="login-btn" class="btn btn-neon" style="width:100%;justify-content:center;margin-top:4px">
+      ⬡ Sign In
+    </button>
+    <div class="login-demo-hints">
+      <div class="demo-hint" onclick="fillDemo('patient')">Patient demo</div>
+      <div class="demo-hint" onclick="fillDemo('doctor')">Doctor demo</div>
+      <div class="demo-hint" onclick="fillDemo('insurer')">Insurer demo</div>
+    </div>
+  </div>
+</div>
+
+<!-- App shell (hidden until logged in) -->
+<div id="app" style="display:none">
+  <canvas id="stars"></canvas>
+  <div class="grid-bg"></div>
+  <nav id="main-nav"></nav>
+  <div class="panels" id="panels"></div>
+  <div id="toast-container"></div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
