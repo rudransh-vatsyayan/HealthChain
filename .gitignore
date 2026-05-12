@@ -1,5 +1,7 @@
-node_modules/
-backend/.env
-dist/
-*.log
+node_modules
+.env
+dist
+.vite
+coverage
+uploads
 .DS_Store
