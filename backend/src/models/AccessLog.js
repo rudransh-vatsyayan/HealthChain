@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const accessLogSchema = new mongoose.Schema({
   actor:  { type: String, required: true },
@@ -6,4 +6,4 @@ const accessLogSchema = new mongoose.Schema({
   color:  { type: String, default: '#00f5ff' },
 }, { timestamps: true });
 
-module.exports = mongoose.model('AccessLog', accessLogSchema);
+export default mongoose.model('AccessLog', accessLogSchema);

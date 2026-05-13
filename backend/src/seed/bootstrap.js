@@ -1,9 +1,11 @@
-const User      = require('../models/User');
-const Patient   = require('../models/Patient');
-const Doctor    = require('../models/Doctor');
-const Record    = require('../models/Record');
-const AccessLog = require('../models/AccessLog');
-const demoStore = require('../data/demoStore');
+import User               from '../models/User.js';
+import Patient            from '../models/Patient.js';
+import Doctor             from '../models/Doctor.js';
+import Record             from '../models/Record.js';
+import AccessLog          from '../models/AccessLog.js';
+import InsuranceRequest   from '../models/InsuranceRequest.js';
+import FederatedRound     from '../models/FederatedRound.js';
+import * as demoStore from '../data/demoStore.js';
 
 async function seedDemoData({ reset = false } = {}) {
   if (demoStore.isMemory()) {
@@ -11,7 +13,10 @@ async function seedDemoData({ reset = false } = {}) {
   }
 
   if (reset) {
-    await Promise.all([User, Patient, Doctor, Record, AccessLog].map(Model => Model.deleteMany({})));
+    await Promise.all([
+      User, Patient, Doctor, Record, AccessLog,
+      InsuranceRequest, FederatedRound,
+    ].map(Model => Model.deleteMany({})));
   } else {
     const existing = await User.countDocuments();
     if (existing > 0) return false;
@@ -65,4 +70,4 @@ async function seedDemoData({ reset = false } = {}) {
   return true;
 }
 
-module.exports = { seedDemoData };
+export { seedDemoData };

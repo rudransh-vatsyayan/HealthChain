@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs');
+import bcrypt from 'bcryptjs';
 
 const state = {
   users: [],
@@ -131,7 +131,7 @@ async function createLog(input) {
   return clone(log);
 }
 
-module.exports = {
+export {
   isMemory,
   seed,
   countUsers,

@@ -1,19 +1,25 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const connectDB = require('./src/config/db');
-const { seedDemoData } = require('./src/seed/bootstrap');
+import dotenv from 'dotenv';
 
-const authRoutes      = require('./src/routes/auth');
-const patientRoutes   = require('./src/routes/patients');
-const recordRoutes    = require('./src/routes/records');
-const vitalsRoutes    = require('./src/routes/vitals');
-const doctorRoutes    = require('./src/routes/doctor');
-const insuranceRoutes = require('./src/routes/insurance');
-const federatedRoutes = require('./src/routes/federated');
-const activityRoutes  = require('./src/routes/activity');
+dotenv.config();
+
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import connectDB from './src/config/db.js';
+import { seedDemoData } from './src/seed/bootstrap.js';
+
+import authRoutes      from './src/routes/auth.js';
+import patientRoutes   from './src/routes/patients.js';
+import recordRoutes    from './src/routes/records.js';
+import vitalsRoutes    from './src/routes/vitals.js';
+import doctorRoutes    from './src/routes/doctor.js';
+import insuranceRoutes from './src/routes/insurance.js';
+import federatedRoutes from './src/routes/federated.js';
+import activityRoutes  from './src/routes/activity.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -27,6 +33,15 @@ app.use(cors({
 app.use(morgan('dev'));
 app.use(express.json());
 
+if (process.env.USE_MEMORY_DB !== 'true') {
+  await connectDB();
+}
+
+if (process.env.AUTO_SEED !== 'false') {
+  const seeded = await seedDemoData();
+  if (seeded) console.log('Demo data seeded. Login with patient@healthchain.io / health123');
+}
+
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/auth',      authRoutes);
 app.use('/api/patients',  patientRoutes);
@@ -35,7 +50,8 @@ app.use('/api/vitals',    vitalsRoutes);
 app.use('/api/doctor',    doctorRoutes);
 app.use('/api/insurance', insuranceRoutes);
 app.use('/api/federated', federatedRoutes);
-app.use('/api/activity',  activityRoutes);
+app.use('/api/activity',      activityRoutes);
+app.use('/api/activity-log',  activityRoutes);
 
 app.get('/api/health', (_req, res) =>
   res.json({ status: 'ok', service: 'HealthChain API', timestamp: new Date() })
@@ -48,20 +64,22 @@ app.use((err, _req, res, _next) => {
 });
 
 async function start() {
-  await connectDB();
-  if (process.env.AUTO_SEED !== 'false') {
-    const seeded = await seedDemoData();
-    if (seeded) console.log('Demo data seeded. Login with patient@healthchain.io / health123');
-  }
-
   app.listen(PORT, () =>
     console.log(`HealthChain API -> http://localhost:${PORT}`)
   );
 }
 
-start().catch((err) => {
-  console.error('Failed to start HealthChain API:', err);
-  process.exit(1);
-});
+const __filename = fileURLToPath(import.meta.url);
+const entryResolved = process.argv[1] ? path.resolve(process.argv[1]) : '';
+const isMainModule =
+  Boolean(entryResolved) &&
+  path.normalize(__filename) === path.normalize(entryResolved);
 
-module.exports = app;
+if (isMainModule) {
+  start().catch((err) => {
+    console.error('Failed to start HealthChain API:', err);
+    process.exit(1);
+  });
+}
+
+export default app;

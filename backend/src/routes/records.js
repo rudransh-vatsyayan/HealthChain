@@ -1,8 +1,10 @@
-const router    = require('express').Router();
-const auth      = require('../middleware/auth');
-const Record    = require('../models/Record');
-const AccessLog = require('../models/AccessLog');
-const demoStore = require('../data/demoStore');
+import express from 'express';
+import auth from '../middleware/auth.js';
+import Record from '../models/Record.js';
+import AccessLog from '../models/AccessLog.js';
+import * as demoStore from '../data/demoStore.js';
+
+const router = express.Router();
 
 // GET /api/records
 router.get('/', auth, async (req, res) => {
@@ -36,4 +38,4 @@ router.post('/', auth, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-module.exports = router;
+export default router;

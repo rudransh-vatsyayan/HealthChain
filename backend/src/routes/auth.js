@@ -1,7 +1,9 @@
-const router = require('express').Router();
-const jwt    = require('jsonwebtoken');
-const User   = require('../models/User');
-const demoStore = require('../data/demoStore');
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
+import * as demoStore from '../data/demoStore.js';
+
+const router = express.Router();
 
 const sign = (user) =>
   jwt.sign(
@@ -53,4 +55,4 @@ router.post('/register', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

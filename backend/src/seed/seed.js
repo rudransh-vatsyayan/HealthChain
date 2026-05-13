@@ -1,6 +1,11 @@
-require('dotenv').config({ path: require('path').join(__dirname, '../../.env') });
-const mongoose  = require('mongoose');
-const { seedDemoData } = require('./bootstrap');
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import { seedDemoData } from './bootstrap.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 async function seed() {
   await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/healthchain');

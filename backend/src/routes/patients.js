@@ -1,7 +1,9 @@
-const router  = require('express').Router();
-const auth    = require('../middleware/auth');
-const Patient = require('../models/Patient');
-const demoStore = require('../data/demoStore');
+import express from 'express';
+import auth from '../middleware/auth.js';
+import Patient from '../models/Patient.js';
+import * as demoStore from '../data/demoStore.js';
+
+const router = express.Router();
 
 // GET /api/patients  — all patients (doctor view)
 router.get('/', auth, async (req, res) => {
@@ -23,4 +25,4 @@ router.get('/me', auth, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-module.exports = router;
+export default router;

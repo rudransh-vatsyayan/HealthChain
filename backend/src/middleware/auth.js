@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
 const auth = (req, res, next) => {
   // Support Authorization header OR ?token= query (needed for SSE / EventSource)
@@ -17,4 +17,4 @@ const auth = (req, res, next) => {
   }
 };
 
-module.exports = auth;
+export default auth;

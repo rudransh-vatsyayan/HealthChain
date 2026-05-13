@@ -1,5 +1,7 @@
-const router = require('express').Router();
-const auth   = require('../middleware/auth');
+import express from 'express';
+import auth from '../middleware/auth.js';
+
+const router = express.Router();
 
 const BASE = [
   { label: 'Heart Rate',     val: 72,  max: 120, unit: 'bpm',   color: '#f87171' },
@@ -32,4 +34,4 @@ router.get('/stream', auth, (req, res) => {
   req.on('close', () => clearInterval(iv));
 });
 
-module.exports = router;
+export default router;

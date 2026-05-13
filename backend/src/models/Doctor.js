@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const doctorSchema = new mongoose.Schema({
   userId:    { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -8,4 +8,4 @@ const doctorSchema = new mongoose.Schema({
   licenseNo: { type: String },
 }, { timestamps: true });
 
-module.exports = mongoose.model('Doctor', doctorSchema);
+export default mongoose.model('Doctor', doctorSchema);

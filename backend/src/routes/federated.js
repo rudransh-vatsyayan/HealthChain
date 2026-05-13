@@ -1,5 +1,8 @@
-const router = require('express').Router();
-const auth   = require('../middleware/auth');
+import express from 'express';
+import auth from '../middleware/auth.js';
+import FederatedRound from '../models/FederatedRound.js';
+
+const router = express.Router();
 
 const HOSPITALS = [
   { name: 'Apollo',   x: 0.15, y: 0.30, color: '#00f5ff', pts: 12840 },
@@ -10,7 +13,7 @@ const HOSPITALS = [
   { name: 'Medanta',  x: 0.15, y: 0.65, color: '#60a5fa', pts: 10200 },
 ];
 
-// Mutable state (use Redis/DB in production)
+// Mutable state (simulation; completed rounds are persisted to FederatedRound)
 let currentRound    = 0;
 let currentAccuracy = 71.2;
 let isTraining      = false;
@@ -28,8 +31,7 @@ router.get('/status', auth, (_req, res) => {
   });
 });
 
-// POST /api/federated/start  — trigger a training round
-router.post('/start', auth, (req, res) => {
+function startTraining(req, res) {
   if (isTraining) return res.status(409).json({ error: 'Training already in progress' });
   if (currentRound >= 5) {
     currentRound = 0;
@@ -39,13 +41,34 @@ router.post('/start', auth, (req, res) => {
   const roundId = `ROUND-${Date.now()}`;
   res.json({ roundId, round: currentRound + 1 });
 
-  // Simulate training completing after 6 s on the server side
-  setTimeout(() => {
+  setTimeout(async () => {
     currentRound    = Math.min(currentRound + 1, 5);
     currentAccuracy = Math.min(97, 71.2 + currentRound * 4.3 + Math.random() * 1.5);
     isTraining      = false;
+
+    try {
+      await FederatedRound.create({
+        roundId,
+        round: currentRound,
+        accuracy: currentAccuracy,
+        maxRounds: 5,
+        nodeStatus: HOSPITALS.map(h => ({
+          name: h.name, x: h.x, y: h.y, color: h.color, pts: h.pts, progress: 1,
+        })),
+        isTraining: false,
+        completedAt: new Date(),
+      });
+    } catch (err) {
+      console.error('FederatedRound persist:', err.message);
+    }
   }, 6000);
-});
+}
+
+// POST /api/federated/start  — trigger a training round
+router.post('/start', auth, startTraining);
+
+// POST /api/federated/start-round  — alias (implementation plan naming)
+router.post('/start-round', auth, startTraining);
 
 // GET /api/federated/stream/:roundId  — SSE progress packets
 router.get('/stream/:roundId', auth, (req, res) => {
@@ -65,4 +88,4 @@ router.get('/stream/:roundId', auth, (req, res) => {
   req.on('close', () => clearInterval(iv));
 });
 
-module.exports = router;
+export default router;

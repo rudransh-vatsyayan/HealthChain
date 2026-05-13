@@ -1,5 +1,8 @@
-const router = require('express').Router();
-const auth   = require('../middleware/auth');
+import express from 'express';
+import auth from '../middleware/auth.js';
+import InsuranceRequest from '../models/InsuranceRequest.js';
+
+const router = express.Router();
 
 const STEPS = [
   { label: 'Access Request Sent',   sub: 'Encrypted via AES-256 channel',   icon: '⬡' },
@@ -10,13 +13,31 @@ const STEPS = [
 ];
 
 // POST /api/insurance/request  — initiate flow, returns requestId
-router.post('/request', auth, (req, res) => {
-  const requestId = `INS-${Date.now()}`;
-  res.json({ requestId });
+router.post('/request', auth, async (req, res) => {
+  try {
+    const requestId = `INS-${Date.now()}`;
+    await InsuranceRequest.create({
+      requestId,
+      insurerId: req.user.id,
+      status: 'pending',
+    });
+    res.json({ requestId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET /api/insurance/steps/:id  — SSE step-by-step progress
-router.get('/steps/:id', auth, (req, res) => {
+router.get('/steps/:id', auth, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await InsuranceRequest.findOneAndUpdate(
+      { requestId: id },
+      { status: 'in_progress' },
+    );
+  } catch (_) { /* non-fatal */ }
+
   res.setHeader('Content-Type',  'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection',    'keep-alive');
@@ -25,7 +46,7 @@ router.get('/steps/:id', auth, (req, res) => {
   let step = 0;
   const done = [];
 
-  const iv = setInterval(() => {
+  const iv = setInterval(async () => {
     if (step < STEPS.length) {
       res.write(`data: ${JSON.stringify({ step, done: [...done], steps: STEPS, complete: false })}\n\n`);
       done.push(step);
@@ -33,6 +54,15 @@ router.get('/steps/:id', auth, (req, res) => {
     } else {
       res.write(`data: ${JSON.stringify({ complete: true, steps: STEPS })}\n\n`);
       clearInterval(iv);
+      try {
+        await InsuranceRequest.findOneAndUpdate(
+          { requestId: id },
+          {
+            status: 'completed',
+            steps: STEPS.map(s => ({ label: s.label, completedAt: new Date() })),
+          },
+        );
+      } catch (_) { /* non-fatal */ }
       res.end();
     }
   }, 1600);
@@ -40,4 +70,4 @@ router.get('/steps/:id', auth, (req, res) => {
   req.on('close', () => clearInterval(iv));
 });
 
-module.exports = router;
+export default router;

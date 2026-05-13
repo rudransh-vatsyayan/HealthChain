@@ -1,0 +1,2 @@
+{"sessionId":"2d900d","location":"server.js:dbBranch","message":"DB init branch","data":{"vercel":false,"hasMongoUri":true,"hypothesisId":"H2"},"timestamp":1778594030300,"runId":"deploy-debug"}
+{"sessionId":"2d900d","location":"db.js:connectDB","message":"connectDB entered","data":{"hasMongoUri":true,"hypothesisId":"H1"},"timestamp":1778594030316,"runId":"deploy-debug"}
