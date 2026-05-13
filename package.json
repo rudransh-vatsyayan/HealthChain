@@ -5,9 +5,6 @@
   "engines": {
     "node": ">=20"
   },
-  "dependencies": {
-    "serverless-http": "^3.2.0"
-  },
   "scripts": {
     "build": "npm run build --prefix frontend"
   }

@@ -5,6 +5,7 @@ import Record             from '../models/Record.js';
 import AccessLog          from '../models/AccessLog.js';
 import InsuranceRequest   from '../models/InsuranceRequest.js';
 import FederatedRound     from '../models/FederatedRound.js';
+import Vital              from '../models/Vital.js';
 import * as demoStore from '../data/demoStore.js';
 
 async function seedDemoData({ reset = false } = {}) {
@@ -15,7 +16,7 @@ async function seedDemoData({ reset = false } = {}) {
   if (reset) {
     await Promise.all([
       User, Patient, Doctor, Record, AccessLog,
-      InsuranceRequest, FederatedRound,
+      InsuranceRequest, FederatedRound, Vital,
     ].map(Model => Model.deleteMany({})));
   } else {
     const existing = await User.countDocuments();
@@ -65,6 +66,13 @@ async function seedDemoData({ reset = false } = {}) {
     { actor: 'MediShield', action: 'Requested record access', color: '#fbbf24', createdAt: new Date(Date.now() - 5 * 3600000) },
     { actor: 'System', action: 'QR token generated', color: '#00f5ff', createdAt: new Date(Date.now() - 24 * 3600000) },
     { actor: 'Dr. Meera', action: 'Viewed Blood Panel', color: '#a78bfa', createdAt: new Date(Date.now() - 72 * 3600000) },
+  ]);
+
+  await Vital.insertMany([
+    { userId: patientUser._id, label: 'Heart Rate',     val: 72,  max: 120, unit: 'bpm',   color: '#f87171' },
+    { userId: patientUser._id, label: 'SpO₂',           val: 98,  max: 100, unit: '%',     color: '#34d399' },
+    { userId: patientUser._id, label: 'Blood Pressure', val: 120, max: 180, unit: 'mmHg',  color: '#60a5fa' },
+    { userId: patientUser._id, label: 'Glucose',        val: 95,  max: 200, unit: 'mg/dL', color: '#fbbf24' },
   ]);
 
   return true;

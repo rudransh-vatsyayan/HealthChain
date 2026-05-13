@@ -1,73 +1,120 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
+import Record from '../models/Record.js';
 import FederatedRound from '../models/FederatedRound.js';
+import * as demoStore from '../data/demoStore.js';
 
 const router = express.Router();
 
 const HOSPITALS = [
-  { name: 'Apollo',   x: 0.15, y: 0.30, color: '#00f5ff', pts: 12840 },
-  { name: 'AIIMS',    x: 0.45, y: 0.12, color: '#a78bfa', pts: 9200  },
-  { name: 'Fortis',   x: 0.75, y: 0.30, color: '#34d399', pts: 7500  },
-  { name: 'Manipal',  x: 0.80, y: 0.65, color: '#fbbf24', pts: 8900  },
-  { name: 'NIMHANS',  x: 0.45, y: 0.82, color: '#f87171', pts: 6100  },
-  { name: 'Medanta',  x: 0.15, y: 0.65, color: '#60a5fa', pts: 10200 },
+  { name: 'Apollo Hospitals', x: 0.15, y: 0.30, color: '#00f5ff' },
+  { name: 'AIIMS Delhi',      x: 0.45, y: 0.12, color: '#a78bfa' },
+  { name: 'Fortis Hospital',  x: 0.75, y: 0.30, color: '#34d399' },
+  { name: 'Manipal Health',   x: 0.80, y: 0.65, color: '#fbbf24' },
+  { name: 'NIMHANS',          x: 0.45, y: 0.82, color: '#f87171' },
+  { name: 'Medanta Node',     x: 0.15, y: 0.65, color: '#60a5fa' },
 ];
 
-// Mutable state (simulation; completed rounds are persisted to FederatedRound)
-let currentRound    = 0;
-let currentAccuracy = 71.2;
-let isTraining      = false;
+let isTraining = false;
+
+async function getLiveHospitalData() {
+  if (demoStore.isMemory()) {
+    return HOSPITALS.map(h => ({ ...h, pts: Math.floor(Math.random() * 5000 + 5000) }));
+  }
+
+  return await Promise.all(HOSPITALS.map(async (h) => {
+    // Real count from DB + base mock for visualization
+    const count = await Record.countDocuments({ hospital: { $regex: h.name.split(' ')[0], $options: 'i' } });
+    return { ...h, pts: count + 5000 }; // 5000 is the 'pre-trained' base
+  }));
+}
 
 // GET /api/federated/status
-router.get('/status', auth, (_req, res) => {
-  res.json({
-    round:     currentRound,
-    maxRounds: 5,
-    accuracy:  currentAccuracy,
-    nodeCount: HOSPITALS.length,
-    nodes:     HOSPITALS,
-    privacy:   100,
-    isTraining,
-  });
+router.get('/status', auth, async (_req, res) => {
+  try {
+    let round = 0;
+    let accuracy = 71.2;
+
+    if (!demoStore.isMemory()) {
+      const lastRound = await FederatedRound.findOne().sort({ round: -1 });
+      if (lastRound) {
+        round = lastRound.round;
+        accuracy = lastRound.accuracy;
+      }
+    }
+
+    const nodes = await getLiveHospitalData();
+
+    res.json({
+      round,
+      maxRounds: 5,
+      accuracy,
+      nodeCount: nodes.length,
+      nodes,
+      privacy:   100,
+      isTraining,
+    });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-function startTraining(req, res) {
+async function startTraining(req, res) {
   if (isTraining) return res.status(409).json({ error: 'Training already in progress' });
-  if (currentRound >= 5) {
-    currentRound = 0;
-    currentAccuracy = 71.2;
-  }
-  isTraining = true;
-  const roundId = `ROUND-${Date.now()}`;
-  res.json({ roundId, round: currentRound + 1 });
 
-  setTimeout(async () => {
-    currentRound    = Math.min(currentRound + 1, 5);
-    currentAccuracy = Math.min(97, 71.2 + currentRound * 4.3 + Math.random() * 1.5);
-    isTraining      = false;
+  try {
+    let round = 0;
+    let accuracy = 71.2;
 
-    try {
-      await FederatedRound.create({
-        roundId,
-        round: currentRound,
-        accuracy: currentAccuracy,
-        maxRounds: 5,
-        nodeStatus: HOSPITALS.map(h => ({
-          name: h.name, x: h.x, y: h.y, color: h.color, pts: h.pts, progress: 1,
-        })),
-        isTraining: false,
-        completedAt: new Date(),
-      });
-    } catch (err) {
-      console.error('FederatedRound persist:', err.message);
+    if (!demoStore.isMemory()) {
+      const lastRound = await FederatedRound.findOne().sort({ round: -1 });
+      if (lastRound) {
+        round = lastRound.round;
+        accuracy = lastRound.accuracy;
+      }
     }
-  }, 6000);
+
+    const nodes = await getLiveHospitalData();
+    const totalRecords = nodes.reduce((sum, n) => sum + n.pts, 0);
+
+    if (round >= 5) {
+      round = 0;
+      accuracy = 71.2;
+      if (!demoStore.isMemory()) await FederatedRound.deleteMany({});
+    }
+
+    isTraining = true;
+    const nextRound = round + 1;
+    const roundId = `ROUND-${Date.now()}`;
+    res.json({ roundId, round: nextRound });
+
+    setTimeout(async () => {
+      // Accuracy improvement scales with total data points
+      const dataBonus = (totalRecords / 50000) * 2; 
+      const newAccuracy = Math.min(98.5, accuracy + 3.5 + dataBonus + Math.random());
+      isTraining = false;
+
+      if (!demoStore.isMemory()) {
+        try {
+          await FederatedRound.create({
+            roundId,
+            round: nextRound,
+            accuracy: newAccuracy,
+            maxRounds: 5,
+            nodeStatus: nodes.map(h => ({ ...h, progress: 1 })),
+            isTraining: false,
+            completedAt: new Date(),
+          });
+        } catch (err) {
+          console.error('FederatedRound persist:', err.message);
+        }
+      }
+    }, 6000);
+  } catch (err) { res.status(500).json({ error: err.message }); }
 }
 
 // POST /api/federated/start  — trigger a training round
 router.post('/start', auth, startTraining);
 
-// POST /api/federated/start-round  — alias (implementation plan naming)
+// POST /api/federated/start-round  — alias
 router.post('/start-round', auth, startTraining);
 
 // GET /api/federated/stream/:roundId  — SSE progress packets

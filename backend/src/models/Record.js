@@ -6,6 +6,7 @@ const recordSchema = new mongoose.Schema({
   type:       { type: String, required: true },
   date:       { type: String },
   doctorName: { type: String },
+  hospital:   { type: String },
   status:     { type: String, enum: ['normal', 'flagged', 'active'], default: 'normal' },
   icon:       { type: String, default: '⬡' },
   filename:   { type: String },

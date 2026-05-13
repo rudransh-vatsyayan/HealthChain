@@ -32,16 +32,31 @@ export function mountPatient(container) {
       </div>
 
       <div class="grid2" style="margin-bottom:16px">
-        <div class="glass glow-border" style="padding:20px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <div class="card-title neon-text">Medical Records</div>
-            <div class="badge badge-info">Encrypted</div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="glass glow-border" style="padding:20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+              <div class="card-title neon-text">Log Daily Vitals</div>
+              <div class="badge badge-info">Manual Input</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="form-group"><label>Heart Rate</label><input type="number" id="inp-hr" class="form-input" placeholder="72"></div>
+              <div class="form-group"><label>SpO₂ (%)</label><input type="number" id="inp-spo2" class="form-input" placeholder="98"></div>
+              <div class="form-group"><label>Systolic BP</label><input type="number" id="inp-bp" class="form-input" placeholder="120"></div>
+              <div class="form-group"><label>Glucose</label><input type="number" id="inp-glu" class="form-input" placeholder="95"></div>
+            </div>
+            <button class="btn btn-neon" style="width:100%;margin-top:16px;justify-content:center" onclick="window._submitVitals()">⬡ Process Vitals</button>
           </div>
-          <div id="records-list"><div class="loader"><div class="spinner"></div> Fetching records…</div></div>
+          <div class="glass glow-border" style="padding:20px;flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+              <div class="card-title neon-text">Medical Records</div>
+              <div class="badge badge-info">Encrypted</div>
+            </div>
+            <div id="records-list"><div class="loader"><div class="spinner"></div> Fetching…</div></div>
+          </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:16px">
           <div class="glass glass-purple glow-purple" style="padding:20px">
-            <div class="card-title purple-text" style="margin-bottom:14px">Live Vitals</div>
+            <div class="card-title purple-text" style="margin-bottom:14px">Live Health Stream</div>
             <div id="vitals-container"><div class="loader"><div class="spinner"></div></div></div>
           </div>
           <div class="glass glow-border" style="padding:20px;text-align:center">
@@ -68,8 +83,24 @@ export function mountPatient(container) {
       </div>
     </div>`;
 
-  // Wire up global QR handler
+  // Wire up global handlers
   window._generateQR = generateQR;
+  window._submitVitals = async () => {
+    const hr = document.getElementById('inp-hr').value;
+    const sp = document.getElementById('inp-spo2').value;
+    const bp = document.getElementById('inp-bp').value;
+    const gl = document.getElementById('inp-glu').value;
+    if (!hr && !sp && !bp && !gl) return showToast('Please enter at least one value', 'error');
+
+    try {
+      await apiFetch('/vitals', {
+        method: 'POST',
+        body: JSON.stringify({ hr, sp, bp, gl })
+      });
+      showToast('Vitals processed & health score updated', 'success');
+      loadPatientProfile(); // Refresh health score
+    } catch (e) { showToast('Failed to save vitals', 'error'); }
+  };
 
   // Load all data
   loadPatientProfile();

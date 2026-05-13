@@ -12,14 +12,14 @@ import { fileURLToPath } from 'node:url';
 import connectDB from './src/config/db.js';
 import { seedDemoData } from './src/seed/bootstrap.js';
 
-import authRoutes      from './src/routes/auth.js';
-import patientRoutes   from './src/routes/patients.js';
-import recordRoutes    from './src/routes/records.js';
-import vitalsRoutes    from './src/routes/vitals.js';
-import doctorRoutes    from './src/routes/doctor.js';
+import authRoutes from './src/routes/auth.js';
+import patientRoutes from './src/routes/patients.js';
+import recordRoutes from './src/routes/records.js';
+import vitalsRoutes from './src/routes/vitals.js';
+import doctorRoutes from './src/routes/doctor.js';
 import insuranceRoutes from './src/routes/insurance.js';
 import federatedRoutes from './src/routes/federated.js';
-import activityRoutes  from './src/routes/activity.js';
+import activityRoutes from './src/routes/activity.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -42,16 +42,17 @@ if (process.env.AUTO_SEED !== 'false') {
   if (seeded) console.log('Demo data seeded. Login with patient@healthchain.io / health123');
 }
 
+
 // ── Routes ────────────────────────────────────────────────────────────────────
-app.use('/api/auth',      authRoutes);
-app.use('/api/patients',  patientRoutes);
-app.use('/api/records',   recordRoutes);
-app.use('/api/vitals',    vitalsRoutes);
-app.use('/api/doctor',    doctorRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/patients', patientRoutes);
+app.use('/api/records', recordRoutes);
+app.use('/api/vitals', vitalsRoutes);
+app.use('/api/doctor', doctorRoutes);
 app.use('/api/insurance', insuranceRoutes);
 app.use('/api/federated', federatedRoutes);
-app.use('/api/activity',      activityRoutes);
-app.use('/api/activity-log',  activityRoutes);
+app.use('/api/activity', activityRoutes);
+app.use('/api/activity-log', activityRoutes);
 
 app.get('/api/health', (_req, res) =>
   res.json({ status: 'ok', service: 'HealthChain API', timestamp: new Date() })
@@ -81,5 +82,3 @@ if (isMainModule) {
     process.exit(1);
   });
 }
-
-export default app;

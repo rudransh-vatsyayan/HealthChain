@@ -60,10 +60,6 @@ docker compose up --build
 
 This runs MongoDB, the API, and the **production-built** frontend behind nginx on port **5173** (see [`frontend/nginx.conf`](frontend/nginx.conf)).
 
-## Deploy (Vercel)
-
-The repo includes [`vercel.json`](vercel.json) and [`api/index.js`](api/index.js). Use a hosted MongoDB (e.g. Atlas), set `MONGO_URI`, `JWT_SECRET`, and `FRONTEND_URL` in the Vercel project environment.
-
 ## API highlights
 
 Auth and core resources:

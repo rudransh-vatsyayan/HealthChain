@@ -51,11 +51,15 @@ router.post('/uploads', auth, async (req, res) => {
       return res.status(201).json(record);
     }
 
+    const doctor = await Doctor.findOne({ userId: req.user.id });
+    const hospitalName = doctor ? doctor.hospital : 'Apollo Hospitals';
+
     const record = await Record.create({
       recordId,
       type:       fileType || 'Report',
       date:       new Date().toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }),
       doctorName: req.user.name,
+      hospital:   hospitalName,
       status:     'normal',
       icon:       '⬡',
       filename,
@@ -64,7 +68,7 @@ router.post('/uploads', auth, async (req, res) => {
     });
     await AccessLog.create({
       actor:  req.user.name,
-      action: `Uploaded ${filename || 'report'}`,
+      action: `Uploaded ${filename || 'report'} to ${hospitalName}`,
       color:  '#a78bfa',
     });
     res.status(201).json(record);
