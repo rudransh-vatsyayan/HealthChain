@@ -58,3 +58,13 @@ export async function login(email, password) {
   setUser(data.user);
   return data;
 }
+
+export async function register(userData) {
+  const data = await apiFetch('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(userData),
+  });
+  setToken(data.token);
+  setUser(data.user);
+  return data;
+}

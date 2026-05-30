@@ -23,8 +23,10 @@ services:
     environment:
       - PORT=3001
       - MONGO_URI=mongodb://mongo:27017/healthchain
-      - JWT_SECRET=healthchain_super_secret_key_change_in_production
+      - JWT_SECRET=healthchainsecret
       - FRONTEND_URL=http://localhost:5173
+      - USE_MEMORY_DB=false
+      - SEED_RESET=false
 
   frontend:
     build:

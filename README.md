@@ -2,6 +2,39 @@
 
 HealthChain is a **Vite** frontend plus **Express** API for the federated health-record demo. The old single-file `federate.html` prototype was replaced by the SPA under [`frontend/`](frontend/) and is no longer in this repo.
 
+## Deploy to Vercel (one click)
+
+This repo is configured for **instant Vercel deployment** with zero database setup. On Vercel, if `MONGO_URI` is unset or points at localhost, the API runs in **in-memory demo mode** with seeded users and sample data.
+
+1. Push this repo to GitHub.
+2. Import the project in [Vercel](https://vercel.com/new).
+3. Leave the default settings (root directory `.`, build command and output directory come from [`vercel.json`](vercel.json)).
+4. Deploy.
+
+The frontend and API share the same origin (`/api/*` is routed to a serverless Express handler in [`api/index.js`](api/index.js)).
+
+**Optional — persistent MongoDB (Atlas):**
+
+| Variable | Value |
+|----------|--------|
+| `MONGO_URI` | `mongodb+srv://...` Atlas connection string |
+| `JWT_SECRET` | Strong random secret |
+| `USE_MEMORY_DB` | `false` |
+
+Demo logins work immediately after deploy (memory mode or after first seed):
+
+```text
+patient@healthchain.io / health123
+doctor@healthchain.io / health123
+insurer@healthchain.io / health123
+```
+
+**CLI deploy:**
+
+```powershell
+npx vercel
+```
+
 ## Run Locally
 
 **Prerequisites:** MongoDB reachable at `MONGO_URI` (see below). The API exits on startup if it cannot connect.

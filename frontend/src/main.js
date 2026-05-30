@@ -1,4 +1,4 @@
-import { login, getToken, getUser } from './api/client.js';
+import { login, register, getToken, getUser } from './api/client.js';
 import { initStarfield }            from './components/starfield.js';
 import { renderNav }                from './components/nav.js';
 import { showToast }                from './components/toast.js';
@@ -40,10 +40,30 @@ function showPanel(id) {
 }
 
 // ── Login ─────────────────────────────────────────────────────────────────────
-function initLogin() {
+// ── Auth Logic ───────────────────────────────────────────────────────────────
+let authMode = 'login';
+
+function initAuth() {
   document.getElementById('login-btn').addEventListener('click', doLogin);
-  document.getElementById('login-password').addEventListener('keydown', e => {
-    if (e.key === 'Enter') doLogin();
+  document.getElementById('reg-btn').addEventListener('click', doRegister);
+  document.getElementById('toggle-auth').addEventListener('click', e => {
+    e.preventDefault();
+    authMode = authMode === 'login' ? 'register' : 'login';
+    const isLogin = authMode === 'login';
+
+    document.getElementById('login-fields').style.display   = isLogin ? 'block' : 'none';
+    document.getElementById('login-btn').style.display      = isLogin ? 'flex'  : 'none';
+    document.getElementById('demo-hints').style.display      = isLogin ? 'flex'  : 'none';
+    document.getElementById('register-fields').style.display = isLogin ? 'none'  : 'block';
+    document.getElementById('reg-btn').style.display         = isLogin ? 'none'  : 'flex';
+    document.getElementById('toggle-auth').textContent       = isLogin ? 'Need an account? Register here' : 'Already have an account? Sign in';
+    document.getElementById('login-error').style.display     = 'none';
+  });
+
+  ['login-password', 'reg-password'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') authMode === 'login' ? doLogin() : doRegister();
+    });
   });
 }
 
@@ -77,6 +97,32 @@ async function doLogin() {
   }
 }
 
+async function doRegister() {
+  const btn   = document.getElementById('reg-btn');
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-password').value;
+  const role  = document.getElementById('reg-role').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  if (!name || !email || !pass) {
+    errEl.textContent = 'All fields are required.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.textContent = 'Creating account…'; btn.disabled = true;
+  try {
+    await register({ name, email, password: pass, role });
+    bootApp();
+  } catch(e) {
+    errEl.textContent = e.message || 'Registration failed';
+    errEl.style.display = 'block';
+    btn.textContent = '◈ Create Account'; btn.disabled = false;
+  }
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────────
 function bootApp() {
   document.getElementById('login-overlay').style.display = 'none';
@@ -92,7 +138,7 @@ function bootApp() {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-initLogin();
+initAuth();
 
 // If already logged in, skip login screen
 if (getToken()) {

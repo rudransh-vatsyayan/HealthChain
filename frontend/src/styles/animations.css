@@ -56,3 +56,20 @@
   animation: shimmer 1.4s infinite linear;
   border-radius: 6px;
 }
+
+@keyframes encFlicker {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
+}
+@keyframes decryptReveal {
+  0%   { filter: blur(4px); opacity: 0; }
+  100% { filter: blur(0);   opacity: 1; }
+}
+@keyframes nodeGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(52,211,153,.0); }
+}
+@keyframes packetTravel {
+  0%   { transform: translateX(0);   opacity: 1; }
+  100% { transform: translateX(80px); opacity: 0; }
+}

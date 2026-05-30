@@ -49,6 +49,30 @@ router.post('/register', async (req, res) => {
     const user = demoStore.isMemory()
       ? await demoStore.createUser({ email, password, name, role })
       : await User.create({ email, password, name, role });
+
+    // Auto-create profiles in DB mode
+    if (!demoStore.isMemory()) {
+      const Patient = (await import('../models/Patient.js')).default;
+      const Doctor = (await import('../models/Doctor.js')).default;
+
+      if (role === 'patient') {
+        await Patient.create({
+          userId: user._id,
+          name: user.name,
+          patientId: `HC-${Date.now().toString().slice(-4)}`,
+          bloodType: 'O+', // Default
+          healthScore: 70, // Initial score
+        });
+      } else if (role === 'doctor') {
+        await Doctor.create({
+          userId: user._id,
+          name: user.name,
+          specialty: 'General Practitioner',
+          hospital: 'HealthChain Network',
+        });
+      }
+    }
+
     res.status(201).json({ token: sign(user), user: { id: user._id, name: user.name, role: user.role, email: user.email } });
   } catch (err) {
     res.status(500).json({ error: err.message });

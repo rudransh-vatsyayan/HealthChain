@@ -19,18 +19,52 @@
     <div class="login-logo">HealthChain</div>
     <p class="login-sub">Privacy-First · Blockchain-Secured · Federated AI</p>
     <div id="login-error" class="login-error" style="display:none"></div>
-    <div class="login-field">
-      <label for="login-email">Email</label>
-      <input id="login-email" type="email" placeholder="patient@healthchain.io" autocomplete="email" />
+    <div id="login-fields">
+      <div class="login-field">
+        <label for="login-email">Email</label>
+        <input id="login-email" type="email" placeholder="patient@healthchain.io" autocomplete="email" />
+      </div>
+      <div class="login-field">
+        <label for="login-password">Password</label>
+        <input id="login-password" type="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
     </div>
-    <div class="login-field">
-      <label for="login-password">Password</label>
-      <input id="login-password" type="password" placeholder="••••••••" autocomplete="current-password" />
+
+    <div id="register-fields" style="display:none">
+      <div class="login-field">
+        <label for="reg-name">Full Name</label>
+        <input id="reg-name" type="text" placeholder="John Doe" />
+      </div>
+      <div class="login-field">
+        <label for="reg-email">Email</label>
+        <input id="reg-email" type="email" placeholder="john@example.com" />
+      </div>
+      <div class="login-field">
+        <label for="reg-password">Password</label>
+        <input id="reg-password" type="password" placeholder="••••••••" />
+      </div>
+      <div class="login-field">
+        <label for="reg-role">Account Role</label>
+        <select id="reg-role" class="form-input" style="background:rgba(255,255,255,0.05);padding:8px">
+          <option value="patient">Patient</option>
+          <option value="doctor">Doctor</option>
+          <option value="insurer">Insurer</option>
+        </select>
+      </div>
     </div>
+
     <button id="login-btn" class="btn btn-neon" style="width:100%;justify-content:center;margin-top:4px">
       ⬡ Sign In
     </button>
-    <div class="login-demo-hints">
+    <button id="reg-btn" class="btn btn-purple" style="width:100%;justify-content:center;margin-top:4px;display:none">
+      ◈ Create Account
+    </button>
+
+    <div style="text-align:center;margin-top:16px;font-size:12px">
+      <a href="#" id="toggle-auth" style="color:var(--neon);text-decoration:none;opacity:.8">Need an account? Register here</a>
+    </div>
+
+    <div class="login-demo-hints" id="demo-hints">
       <div class="demo-hint" onclick="fillDemo('patient')">Patient demo</div>
       <div class="demo-hint" onclick="fillDemo('doctor')">Doctor demo</div>
       <div class="demo-hint" onclick="fillDemo('insurer')">Insurer demo</div>
